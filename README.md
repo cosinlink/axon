@@ -20,10 +20,16 @@ $ ckb miner -C ckb-data
 # [logger]
 # filter = "info,ckb-script=debug"
 
+# clone current repository recursively
+$ git clone --recursive https://github.com/nervosnetwork/axon.git
+$ cd axon
+
 # compile the ckb contracts
+$ cd ckb-contracts
 $ make install-tools
 $ make generate-protocol
 $ make all-via-docker
+$ cd ..
 
 # run demo
 $ cd demo
