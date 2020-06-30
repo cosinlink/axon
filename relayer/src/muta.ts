@@ -52,7 +52,7 @@ export interface MessagePayload {
 export interface MintSudt {
   id:       Hash,
   receiver: Address,
-  amount:   Uint128,
+  amount:   number,
 }
 
 export interface BatchMintSudt {

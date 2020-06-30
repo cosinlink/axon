@@ -19,13 +19,14 @@
     "@nervosnetwork/ckb-sdk-core": "^0.30.0",
     "@types/lodash": "^4.14.149",
     "@types/lowdb": "^1.0.9",
+    "@types/secp256k1": "^3.5.3",
     "hermit-purple-server": "^0.3.0-alpha.3",
+    "inquirer": "^7.2.0",
     "lodash": "^4.17.15",
     "lowdb": "^1.0.0",
     "muta-sdk": "^0.10.1",
     "node-fetch": "^2.6.0",
-    "snakecase-keys": "^3.1.2",
-    "@types/secp256k1": "^3.5.3",
-    "secp256k1": "^4.0.0"
+    "secp256k1": "^4.0.0",
+    "snakecase-keys": "^3.1.2"
   }
 }

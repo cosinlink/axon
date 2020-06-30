@@ -6,9 +6,9 @@ import {CkbMessage, crossCKBService, CkbTx, BatchMintSudt, MintSudt, MessagePayl
 import { toCKBRPCType } from "../parse";
 import { wait } from "../utils";
 import {utils} from "muta-sdk"
-import {Vec} from "muta-sdk/build/main/types/scalar";
-import {encode} from "rlp"
+import * as ckb_utils from "@nervosnetwork/ckb-sdk-utils"
 import { ecdsaSign, publicKeyCreate } from 'secp256k1';
+import {hexToNum} from "muta-sdk/build/main/utils";
 
 
 const debug = require("debug")("relayer:ckb-listener");
@@ -76,7 +76,7 @@ export class CkbListener {
             `found ${crossTxs.length} cross txs of ${block.transactions.length} txs in height: ${currentHeight}`
           );
 
-          // if (!crossTxs.length) continue;
+          if (!crossTxs.length) continue;
           await this.onSUDTLockedToCrossCell(currentHeight, crossTxs);
 
           await wait(5000);
@@ -97,15 +97,13 @@ export class CkbListener {
   ) {
     let headers = await relayToMutaBuffer.readAllHeaders();
     debug(`start relay to muta`);
-    // await crossCKBService.update_headers({ headers });
-    // await relayToMutaBuffer.flushHeaders();
 
-    const batchMint = {
-      batch: [],
-    } as BatchMintSudt
-
+    // generate batchMint from crossTxs
+    const batchMint = generateBatchMint(crossTxs)
 
     const payload_bytes = encode_batchMint( batchMint )
+    console.log(payload_bytes)
+    console.log( JSON.parse( payload_bytes.toString() ) )
     const { signature } = ecdsaSign(utils.keccak( payload_bytes ), utils.toBuffer(config.muta.privateKey))
     const messagePayload = {
       payload: utils.toHex(payload_bytes),
@@ -120,14 +118,50 @@ export class CkbListener {
 }
 
 function encode_batchMint( batchMint: BatchMintSudt ): Buffer {
-
-  const array = [ batchMint.batch.map(
-      mintSudt => ([
-          mintSudt.id,
-          mintSudt.receiver,
-          mintSudt.amount
-      ])
-  ) ]
-
-  return encode(array)
+  return Buffer.from(JSON.stringify(batchMint), "utf8")
 }
+
+function generateBatchMint(crossTxs: CKBComponents.Transaction[]) {
+  const batchMint = {
+    batch: crossTxs.map(
+        tx => {
+          const outputIndex = tx.inputs.length
+
+          return {
+            id: tx.hash,
+            receiver: utils.toHex(tx.witnesses[ outputIndex ]),
+            amount: LittleEndianHexToBigint(tx.outputsData[0])
+          }  as MintSudt
+        }
+    ),
+  } as BatchMintSudt
+  return batchMint
+}
+
+
+function LittleEndianHexToBigint(hex: string) : number {
+  if (hex.startsWith("0x")) {
+    hex = hex.slice(2);
+  }
+  let num = BigInt(0);
+  for (let c = 0; c < hex.length; c += 2) {
+    num += BigInt(parseInt(hex.substr(c, 2), 16) * 2 ** (4 * c));
+  }
+  return Number(num)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,25 +1,26 @@
 {
   "muta": {
-    "endpoint": "http://47.56.237.128:4800/graphql",
+    "endpoint2": "http://47.56.237.128:4800/graphql",
+    "endpoint": "http://0.0.0.0:8000/graphql",
     "privateKey": "0x30269d47fcf602b889243722b666881bf953f1213228363d34cf04ddcd51dfd2"
   },
   "ckb": {
-    "url": "http://http://127.0.0.1:8114",
-    "privateKey": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeff",
+    "url": "http://127.0.0.1:8114",
+    "privateKey": "0xd00c06bfd800d27397002dca6fb0993d5ba6399b4238b2f29ee9deb97593d2b0",
     "output": {
       "lock": {
-        "codeHash": "0x4d037cce9d3dafe249fcc79e536f2dac55506891c50ec53c64cbb2c64fb82f7e",
+        "codeHash": "0xc7ca6184eb65eed3b56a440aae7771faa712ae096a55a1cdf56a7a18d235c6e0",
         "hashType": "data",
-        "args": "0x6979b27a43004ee565e24efd9c2f88f38cb14cc51cf4e57d238f660dc10e5158"
+        "args": "0xab117f4330521acececb6816d198a67e73012363fc77b8e5a248ee1d98349ba7"
       },
       "type": {
-        "codeHash": "0xd483925160e4232b2cb29f012e8380b7b612d71cf4e79991476b6bcf610735f6",
+        "codeHash": "0x235c99bd417809ace72ddddf71609281a70b4c74b0292a77cc34519f566f5b3f",
         "hashType": "data",
-        "args": "0x7b22747848617368223a22307832626537393237303636363533336638373735333735633931336464353063346265323834653830373236383639316237353265373435643238313133623332222c22696e646578223a22307833227d"
+        "args": "0xd38ba135bf4f1388ce3d6d9e91005c8d2f6f706d58c467a3f4b0249133d6fe0103000000"
       }
     },
     "deployedTxHash": ""
   },
   "maxGapPeriod": 10,
-  "deployTxHash": "0x2be79270666533f8775375c913dd50c4be284e807268691b752e745d28113b32"
+  "deployTxHash": "0xd38ba135bf4f1388ce3d6d9e91005c8d2f6f706d58c467a3f4b0249133d6fe01"
 }
