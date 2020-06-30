@@ -26,6 +26,9 @@ const bPrivKey =
   "0xd00c06bfd800d27397002dca6fb0993d5ba6399b4238b2f29ee9deb97593d2b0";
 const nodeUrl = "http://127.0.0.1:8114/";
 const configPath = "./build/config.json";
+const relayerConfigPath = "../relayer/config.json"
+const inquirer = require("inquirer")
+
 let config = {};
 try {
   config = JSON.parse(fs.readFileSync(configPath));
@@ -731,6 +734,34 @@ function transformWitness(witness) {
   }
 }
 
+async function storeConfigToRelayer(config) {
+  const relayerConfig = JSON.parse(fs.readFileSync(relayerConfigPath));
+
+  relayerConfig.deployTxHash = config.deployTxHash;
+  relayerConfig.ckb.output = {
+    lock: config.crosschainLockscript,
+    type: config.crosschainTypescript,
+  }
+  fs.writeFileSync(relayerConfigPath, JSON.stringify(relayerConfig, null, 2));
+}
+
+async function waitForContinue() {
+  const questions = [
+    {
+      type: 'input',
+      name: 'lockscript',
+      message: "Please enter return to lock sudt to crosschain locksript",
+      validate: function(value) {
+        return true;
+      }
+    }
+  ];
+
+  await inquirer.prompt(questions).then(answers => {
+    return;
+  });
+}
+
 async function main() {
   const binaryList = [
     simpleUdtBinary,
@@ -743,6 +774,10 @@ async function main() {
   await waitForTx(config.createCrosschainCellTxHash);
   await issueSUDT();
   await waitForTx(config.issueTxHash);
+
+  await storeConfigToRelayer(config)
+  await waitForContinue()
+
   await lockToCrosschainContract();
   await waitForTx(config.lockToCrosschainTxHash);
   await unlockCrosschainContract();
