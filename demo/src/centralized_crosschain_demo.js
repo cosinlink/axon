@@ -5,28 +5,30 @@ const utils = require("@nervosnetwork/ckb-sdk-utils");
 const ECPair = require("@nervosnetwork/ckb-sdk-utils/lib/ecpair");
 const process = require("process");
 const fs = require("fs");
+const path = require("path");
 const _ = require("lodash");
-const cc = require("../build/centralized_crosschain");
+const cc = require(path.join(__dirname, "../build/centralized_crosschain"));
 const toolkit = require("ckb-js-toolkit");
 const Reader = toolkit.Reader;
 
 // const duktapeBinary = fs.readFileSync("./deps/load0");
 // const duktapeHash = blake2b(duktapeBinary);
-const simpleUdtBinary = fs.readFileSync("./deps/simple_udt");
+const simpleUdtBinary = fs.readFileSync(path.join(__dirname, "../deps/simple_udt"));
 const simpleUdtHash = blake2b(simpleUdtBinary);
-const crosschainTypescript = fs.readFileSync("../ckb-contracts/build/centralized_crosschain_typescript");
+const crosschainTypescript = fs.readFileSync(path.join(__dirname, "../../ckb-contracts/build/centralized_crosschain_typescript"));
 // const crosschainTypescript = fs.readFileSync("./deps/always_success");
 const crosschainTypescriptHash = blake2b(crosschainTypescript);
-const crosschainLockscript = fs.readFileSync("../ckb-contracts/build/centralized_crosschain_lockscript");
+const crosschainLockscript = fs.readFileSync(path.join(__dirname, "../../ckb-contracts/build/centralized_crosschain_lockscript"));
 const crosschainLockscriptHash = blake2b(crosschainLockscript);
 
 const privateKey =
   "0xd00c06bfd800d27397002dca6fb0993d5ba6399b4238b2f29ee9deb97593d2bc";
 const bPrivKey =
   "0xd00c06bfd800d27397002dca6fb0993d5ba6399b4238b2f29ee9deb97593d2b0";
-const nodeUrl = "http://127.0.0.1:8114/";
-const configPath = "./build/config.json";
-const relayerConfigPath = "../relayer/config.json"
+const configPath =path.join(__dirname, "../build/config.json");
+const relayerConfigPath = path.join(__dirname, "../../relayer/config.json");
+const relayerConfig = JSON.parse(fs.readFileSync(relayerConfigPath));
+const nodeUrl = relayerConfig.ckb.url;
 const inquirer = require("inquirer")
 
 let config = {};
@@ -384,7 +386,7 @@ async function lockToCrosschainContract() {
   //     amount: 100,
   //   };
   //   const mutaCrosschainMsgWitness = str2hex(JSON.stringify(mutaCrosschainMsg));
-  const mutaCrosschainMsgWitness = "0xcff1002107105460941f797828f468667aa1a2db";
+  const mutaCrosschainMsgWitness = relayerConfig.muta.address;
 
   const CellCapacity = 200000000000n;
 
@@ -445,11 +447,11 @@ async function lockToCrosschainContract() {
   return txHash;
 }
 
-async function unlockCrosschainContract() {
+async function unlockCrosschainContract(config, rawWitness) {
   const secp256k1Dep = await ckb.loadSecp256k1Dep();
   // read from the crosschain cell data
   const fee_rate = 100000n;
-  const { witness, witness_hex } = gen_witness();
+  const { witness, witness_hex } = gen_witness(rawWitness);
   const balance = new Object();
   const assetBalanceSum = {};
   const blocks = witness.messages;
@@ -630,7 +632,7 @@ async function unlockCrosschainContract() {
   };
   console.log(JSON.stringify(transaction, null, 2));
   const txHash = await ckb.rpc.sendTransaction(transaction, "passthrough");
-  console.log(`lockToCrosschain hash: ${txHash}`);
+  console.log(`unlockToCrosschain hash: ${txHash}`);
   config.unlockTxHash = txHash;
   return txHash;
 }
@@ -666,8 +668,10 @@ function intToUint32(n) {
   return (new Uint8Array(buf)).buffer;
 }
 
-function gen_witness() {
-  const witness = {
+function gen_witness(rawWitness) {
+  const witness =
+      rawWitness ? rawWitness :
+  {
     messages: [
       {
         header: {
@@ -694,7 +698,6 @@ function gen_witness() {
     proof: "0x0800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009",
   };
 
-
   const messages_ab = cc.SerializeMessageVec(witness.messages.map(a => transformMessage(a)));
   const messages_hex = (new Reader(messages_ab)).serializeJson();
 
@@ -704,7 +707,7 @@ function gen_witness() {
   const witness_ab = cc.SerializeCrosschainWitness(witness_transformed);
   const witness_reader = new Reader(witness_ab);
   const witness_hex = witness_reader.serializeJson();
-  const result = {witness, witness_ab, witness_reader, witness_hex};
+  const result = {witness: witness, witness_ab, witness_reader, witness_hex};
   console.log({result, messages_hex, proof: witness.proof});
   return result;
 }
@@ -735,8 +738,6 @@ function transformWitness(witness) {
 }
 
 async function storeConfigToRelayer(config) {
-  const relayerConfig = JSON.parse(fs.readFileSync(relayerConfigPath));
-
   relayerConfig.deployTxHash = config.deployTxHash;
   relayerConfig.ckb.output = {
     lock: config.crosschainLockscript,
@@ -780,11 +781,11 @@ async function main() {
 
   await lockToCrosschainContract();
   await waitForTx(config.lockToCrosschainTxHash);
-  await unlockCrosschainContract();
+  await unlockCrosschainContract(config);
   await waitForTx(config.unlockTxHash);
   await delay(5000);
   const tx = await ckb.rpc.getTransaction(config.unlockTxHash);
   console.log(JSON.stringify(tx, null, 2));
 }
 
-main();
+module.exports = {main, unlockCrosschainContract}
