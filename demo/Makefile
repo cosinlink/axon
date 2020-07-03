@@ -2,7 +2,7 @@ demo:
 	yarn node src/demo.js
 
 relayer:
-    cd ../relayer && npm install && npm start
+	cd ../relayer && npm install && npm start
 
 schema:
 	mkdir -p build/
@@ -14,4 +14,4 @@ schema:
 clean:
 	rm -rf build/*.{json,js,ts}
 
-.PHONY: schema clean demo
+.PHONY: schema clean demo relayer
