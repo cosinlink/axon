@@ -4,9 +4,11 @@ const CKB = require("@nervosnetwork/ckb-sdk-core").default;
 const utils = require("@nervosnetwork/ckb-sdk-utils");
 const ECPair = require("@nervosnetwork/ckb-sdk-utils/lib/ecpair");
 const process = require("process");
+const fetch = require("node-fetch");
 const fs = require("fs");
 const path = require("path");
 const _ = require("lodash");
+
 const cc = require(path.join(__dirname, "../build/centralized_crosschain"));
 const toolkit = require("ckb-js-toolkit");
 const Reader = toolkit.Reader;
@@ -574,13 +576,19 @@ async function unlockCrosschainContract(config, rawWitness) {
     });
     outputsData.push(utils.toHexInLittleEndian(backAmount, 16));
   }
-  for (let i = 0; i < outputs.length; i++) {
-    if (i === 0) {
+
+
+  // crosschainCell capacity should not be modified
+  outputs[0].capacity = crosschainCell.capacity
+
+  for (let i = 1; i < outputs.length; i++) {
+    if (i === outputs.length - 1 ) {
       outputs[i].capacity =
         "0x" +
         (
           totalCapacity -
-          udtCellCapacity * BigInt(outputs.length - 1) -
+          BigInt(outputs[0].capacity) -
+          udtCellCapacity * BigInt(outputs.length - 2) -
           fee
         ).toString(16);
     } else {
@@ -762,23 +770,121 @@ async function storeConfigToRelayer(config) {
     relayerConfig[key] = config[key]
   }
   fs.writeFileSync(relayerConfigPath, JSON.stringify(relayerConfig, null, 2));
+  await delay(2000)
 }
 
-async function waitForContinue() {
+async function waitForLockToLockscript() {
   const questions = [
     {
       type: 'input',
       name: 'lockscript',
-      message: "Please enter return to lock sudt to crosschain locksript",
-      validate: function(value) {
+      message:
+          `Enter return to lock sudt to crosschain lockscript`,
+      validate: (value) => {
         return true;
       }
     }
   ];
 
-  await inquirer.prompt(questions).then(answers => {
-    return;
+  await inquirer.prompt(questions).then(answers => ({}));
+}
+
+async function waitForBurnSudt() {
+  const questions = [
+    {
+      type: 'input',
+      name: 'burnSudt',
+      message: `Enter return to send burn_sudt to muta, then unlocking the sudt from ckb`,
+      validate: (value) => {
+        return true;
+      }
+    }
+  ];
+
+  await inquirer.prompt(questions).then(answers => ({}));
+}
+
+async function get_tip_height() {
+  const height = await fetch(relayerConfig.muta.endpoint, {
+    "headers": {
+      "accept": "*/*",
+      "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,lb;q=0.6",
+      "content-type": "application/json"
+    },
+    "referrer": "http://0.0.0.0:8000/graphiql",
+    "referrerPolicy": "no-referrer-when-downgrade",
+    "body": "{\"operationName\":null,\"variables\":{},\"query\":\"{\\n  getBlock(height: null) {\\n    header {\\n      height\\n    }\\n  }\\n}\\n\"}",
+    "method": "POST",
+    "mode": "cors",
+    "credentials": "omit"
+  }).then(res => res.json()).then(json => json.data.getBlock.header.height).then(height => parseInt(height, 16) + 19).then(height => '0x' + height.toString(16)).then(height => {
+    return height
   });
+
+  return height;
+}
+
+async function get_tx_receipt(txHash) {
+  const res = await fetch(relayerConfig.muta.endpoint, {
+    "headers": {
+      "accept": "*/*",
+      "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,lb;q=0.6",
+      "content-type": "application/json"
+    },
+    "referrer": "http://0.0.0.0:8000/graphiql",
+    "referrerPolicy": "no-referrer-when-downgrade",
+    "body": `{\"operationName\":null,\"variables\":{},\"query\":\"{\\n  getReceipt(txHash: \\\"${txHash}\\\") {\\n    height\\n    response {\\n      serviceName\\n      response {\\n        code\\n        succeedData\\n        errorMessage\\n      }\\n    }\\n    events {\\n      data\\n      topic\\n      service\\n    }\\n  }\\n}\\n\"}`,
+    "method": "POST",
+    "mode": "cors"
+  });
+  const data = (await res.json()).data
+  return data ? data.getReceipt : null
+}
+
+async function burn_sudt(tip_height) {
+  const sudtId = config.udtScript.args
+  let txHash = await fetch(relayerConfig.muta.endpoint, {
+    "headers": {
+      "accept": "*/*",
+      "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,lb;q=0.6",
+      "content-type": "application/json"
+    },
+    "referrer": "http://0.0.0.0:8000/graphiql",
+    "referrerPolicy": "no-referrer-when-downgrade",
+    "body": `{\"operationName\":\"burn_sudt\",\"variables\":{},\"query\":\"mutation burn_sudt {\\n  unsafeSendTransaction(inputRaw: {serviceName: \\\"ckb_sudt\\\", method: \\\"burn_sudt\\\", payload: \\\"{\\\\\\\"id\\\\\\\": \\\\\\"${sudtId}\\\\\\", \\\\\\\"receiver\\\\\\\": \\\\\\\"0xaaaade6c26706c095dcacde9e5c34b0b6160f3b8fe76264a1fa8f0bde756b191\\\\\\\", \\\\\\\"amount\\\\\\\": 3}\\\", timeout: \\\"${tip_height}\\\", nonce: \\\"0x9db2d7efe2b61a88827e4836e2775d913a442ed2f9096ca1233e479607c27cf7\\\", chainId: \\\"0xb6a4d7da21443f5e816e8700eea87610e6d769657d6b8ec73028457bf2ca4036\\\", cyclesPrice: \\\"0x9\\\", cyclesLimit: \\\"0x99999\\\"}, inputPrivkey: \\\"0x30269d47fcf602b889243722b666881bf953f1213228363d34cf04ddcd51dfd2\\\")\\n}\\n\"}`,
+    "method": "POST",
+    "mode": "cors"
+  }).then(res => res.json()).then(json => {
+    return json.data.unsafeSendTransaction;
+  });
+
+  return txHash;
+}
+
+async function get_block_hook_receipt(height) {
+  await fetch(relayerConfig.muta.endpoint, {
+    "headers": {
+      "accept": "*/*",
+      "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,lb;q=0.6",
+      "content-type": "application/json"
+    },
+    "referrer": "http://0.0.0.0:8000/graphiql",
+    "referrerPolicy": "no-referrer-when-downgrade",
+    "body": `{\"operationName\":null,\"variables\":{},\"query\":\"{\\n  getBlockHookReceipt(height: \\\"${height}\\\") {\\n    height\\n    events {\\n      data\\n      topic\\n      service\\n    }\\n    stateRoot\\n  }\\n}\\n\"}`,
+    "method": "POST",
+    "mode": "cors",
+    "credentials": "omit"
+  }).then(res => res.json()).then(json => json.data.getBlockHookReceipt).then(console.log);
+}
+
+async function burnSudtToMuta() {
+  // muta crosschain to ckb
+  let tip_height = await get_tip_height();
+  console.log("user call ckb-sudt to burn sudt and get burn-sudt-proof:\n");
+
+  console.log("sending tx and get txHash:\n");
+  const txHash = await burn_sudt(tip_height);
+  console.log(txHash);
 }
 
 async function main() {
@@ -795,17 +901,22 @@ async function main() {
   await waitForTx(config.issueTxHash);
 
   await storeConfigToRelayer(config)
-  await waitForContinue()
+  await waitForLockToLockscript()
 
   await lockToCrosschainContract();
   await waitForTx(config.lockToCrosschainTxHash);
 
+  await waitForBurnSudt()
+  await burnSudtToMuta()
+
+/*
   await unlockCrosschainContract(config);
   await waitForTx(config.unlockTxHash);
-
   await delay(5000);
   const tx = await ckb.rpc.getTransaction(config.unlockTxHash);
   console.log(JSON.stringify(tx, null, 2));
+*/
+
 }
 
 module.exports = {main, unlockCrosschainContract}

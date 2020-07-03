@@ -2,6 +2,7 @@ import { Validator } from "muta-sdk/build/main/types/struct";
 import { join } from "path";
 import { BurnEvent, CkbHeader, crossCKBService, MessagePayload } from "./muta";
 import { toCKBRPCType } from "./parse";
+import {Vec} from "muta-sdk/build/main/types/scalar";
 
 const low = require("lowdb");
 const FileSync = require("lowdb/adapters/FileSync");
@@ -47,14 +48,16 @@ class MutaCollection {
 
 type BufferStatus = "pending" | "committed" | "proposed";
 
+export interface MutaToCkbWitness {
+  messages:  CkbRelayMessage[],
+  proof: string,
+}
+
 export interface CkbRelayMessage {
   header: {
-    height: number;
-    validatorVersion: string;
-    validators: Validator[];
+    height: bigint;
   };
   events: BurnEvent[];
-  proof: string;
 }
 
 export interface CrossMutaToCkbMessage {

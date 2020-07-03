@@ -107,9 +107,7 @@ export interface BurnEvent {
   asset_id: Hash;
   muta_sender: Address;
   ckb_receiver: string;
-  amount: u64;
-  // nonce: u64;
-  // kind: string; // "cross_to_ckb"
+  amount: bigint;
   topic: string; // "BurnSudtEvent"
 }
 

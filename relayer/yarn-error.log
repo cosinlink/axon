@@ -1,8 +1,8 @@
 Arguments: 
-  /usr/local/Cellar/node/14.2.0/bin/node /usr/local/Cellar/yarn/1.22.4/libexec/bin/yarn.js install
+  /usr/local/Cellar/node/14.2.0/bin/node /usr/local/Cellar/yarn/1.22.4/libexec/bin/yarn.js add ts-node -D
 
 PATH: 
-  /Users/hyz/.gvm/bin:/Users/hyz/.oh-my-zsh/custom/plugins/git-open:/Users/hyz/WebstormProjects/ckb-standalone-debugger/bins/target/release:/Users/hyz/go/bin:/Users/hyz/.cargo/bin:/Users/hyz/.cargo/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/Library/Apple/usr/bin
+  /Users/hyz/.gvm/bin:/Users/hyz/WebstormProjects/ckb-standalone-debugger/bins/target/release:/Users/hyz/go/bin:/Users/hyz/.cargo/bin:/Users/hyz/.oh-my-zsh/custom/plugins/git-open:/Users/hyz/.cargo/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/Library/Apple/usr/bin
 
 Yarn version: 
   1.22.4
@@ -14,7 +14,7 @@ Platform:
   darwin x64
 
 Trace: 
-  Error: ENOENT: no such file or directory, copyfile '/Users/hyz/Library/Caches/Yarn/v6/npm-inherits-2.0.3-633c2c83e3da42a502f52466022480f4208261de-integrity/node_modules/inherits/inherits_browser.js' -> '/Users/hyz/WebstormProjects/relayer/node_modules/body-parser/node_modules/inherits/inherits_browser.js'
+  Error: ENOENT: no such file or directory, copyfile '/Users/hyz/Library/Caches/Yarn/v6/npm-is-buffer-2.0.4-3e572f23c8411a5cfd9557c849e3665e0b290623-integrity/node_modules/is-buffer/index.d.ts' -> '/Users/hyz/WebstormProjects/axon/relayer/node_modules/@nervosnetwork/ckb-sdk-rpc/node_modules/is-buffer/index.d.ts'
 
 npm manifest: 
   {
@@ -30,6 +30,7 @@ npm manifest:
     "author": "",
     "license": "ISC",
     "devDependencies": {
+      "@types/node-fetch": "^2.5.7",
       "ts-node-dev": "^1.0.0-pre.44",
       "typescript": "^3.8.3"
     },
@@ -37,10 +38,14 @@ npm manifest:
       "@nervosnetwork/ckb-sdk-core": "^0.30.0",
       "@types/lodash": "^4.14.149",
       "@types/lowdb": "^1.0.9",
+      "@types/secp256k1": "^3.5.3",
       "hermit-purple-server": "^0.3.0-alpha.3",
+      "inquirer": "^7.2.0",
       "lodash": "^4.17.15",
       "lowdb": "^1.0.0",
       "muta-sdk": "^0.10.1",
+      "node-fetch": "^2.6.0",
+      "secp256k1": "^4.0.0",
       "snakecase-keys": "^3.1.2"
     }
   }
@@ -206,6 +211,14 @@ Lockfile:
     resolved "https://registry.npmjs.org/@types/mime/-/mime-2.0.1.tgz#dc488842312a7f075149312905b5e3c0b054c79d"
     integrity sha512-FwI9gX75FgVBJ7ywgnq/P7tw+/o1GUbtP0KzbtusLigAOgIgNISRK0ZPl4qertvXSIE8YbsVJueQ90cDt9YYyw==
   
+  "@types/node-fetch@^2.5.7":
+    version "2.5.7"
+    resolved "https://registry.yarnpkg.com/@types/node-fetch/-/node-fetch-2.5.7.tgz#20a2afffa882ab04d44ca786449a276f9f6bbf3c"
+    integrity sha512-o2WVNf5UhWRkxlf6eq+jMZDu7kjgpgJfl4xVNlvryc95O/6F2ld8ztKX+qu+Rjyet93WAWm5LjeX9H5FGkODvw==
+    dependencies:
+      "@types/node" "*"
+      form-data "^3.0.0"
+  
   "@types/node@*":
     version "12.12.31"
     resolved "https://registry.npmjs.org/@types/node/-/node-12.12.31.tgz#d6b4f9645fee17f11319b508fb1001797425da51"
@@ -228,7 +241,7 @@ Lockfile:
     resolved "https://registry.npmjs.org/@types/range-parser/-/range-parser-1.2.3.tgz#7ee330ba7caafb98090bece86a5ee44115904c2c"
     integrity sha512-ewFXqrQHlFsgc09MK5jP5iR7vumV/BYayNC6PgJO2LPe8vrnNFyjQjSppfEngITi0qvfKtzFvgKymGheFM9UOA==
   
-  "@types/secp256k1@^3.5.0":
+  "@types/secp256k1@^3.5.0", "@types/secp256k1@^3.5.3":
     version "3.5.3"
     resolved "https://registry.npmjs.org/@types/secp256k1/-/secp256k1-3.5.3.tgz#57ebfdd19d476de3ff13758cf7b6d9e420d54c19"
     integrity sha512-NGcsPDR0P+Q71O63e2ayshmiZGAwCOa/cLJzOIuhOiDvmbvrCIiVtEpqdCJGogG92Bnr6tw/6lqVBsRMEl15OQ==
@@ -406,6 +419,11 @@ Lockfile:
     version "1.0.1"
     resolved "https://registry.npmjs.org/async-limiter/-/async-limiter-1.0.1.tgz#dd379e94f0db8310b08291f9d64c3209766617fd"
     integrity sha512-csOlWGAcRFJaI6m+F2WKdnMKr4HhdhFVBk0H/QbJFMCr+uO2kwohwXQPxw/9OCxp05r5ghVBFSyioixx3gfkNQ==
+  
+  asynckit@^0.4.0:
+    version "0.4.0"
+    resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
+    integrity sha1-x57Zf380y48robyXkLzDZkdLS3k=
   
   atob@^2.1.2:
     version "2.1.2"
@@ -674,6 +692,13 @@ Lockfile:
     resolved "https://registry.npmjs.org/colorette/-/colorette-1.1.0.tgz#1f943e5a357fac10b4e0f5aaef3b14cdc1af6ec7"
     integrity sha512-6S062WDQUXi6hOfkO/sBPVwE5ASXY4G2+b4atvhJfSsuUUhIaUKlkjLe9692Ipyt5/a+IPF5aVTu3V5gvXq5cg==
   
+  combined-stream@^1.0.8:
+    version "1.0.8"
+    resolved "https://registry.yarnpkg.com/combined-stream/-/combined-stream-1.0.8.tgz#c3d45a8b34fd730631a110a8a2520682b31d5a7f"
+    integrity sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==
+    dependencies:
+      delayed-stream "~1.0.0"
+  
   commander@^4.1.1:
     version "4.1.1"
     resolved "https://registry.npmjs.org/commander/-/commander-4.1.1.tgz#9fd602bd936294e9e9ef46a3f4d6964044b18068"
@@ -852,6 +877,11 @@ Lockfile:
     dependencies:
       is-descriptor "^1.0.2"
       isobject "^3.0.1"
+  
+  delayed-stream@~1.0.0:
+    version "1.0.0"
+    resolved "https://registry.yarnpkg.com/delayed-stream/-/delayed-stream-1.0.0.tgz#df3ae199acadfb7d440aaae0b29e2272b24ec619"
+    integrity sha1-3zrhmayt+31ECqrgsp4icrJOxhk=
   
   depd@~1.1.2:
     version "1.1.2"
@@ -1173,6 +1203,15 @@ Lockfile:
     integrity sha1-xjMy9BXO3EsE2/5wz4NklMU8tEs=
     dependencies:
       for-in "^1.0.1"
+  
+  form-data@^3.0.0:
+    version "3.0.0"
+    resolved "https://registry.yarnpkg.com/form-data/-/form-data-3.0.0.tgz#31b7e39c85f1355b7139ee0c647cf0de7f83c682"
+    integrity sha512-CKMFDglpbMi6PyN+brwB9Q/GOw0eAnsrEZDgcsH5Krhz5Od/haKHAX0NmQfha2zPPz0JpWzA7GJHGSnvCRLWsg==
+    dependencies:
+      asynckit "^0.4.0"
+      combined-stream "^1.0.8"
+      mime-types "^2.1.12"
   
   forwarded@~0.1.2:
     version "0.1.2"
@@ -1801,6 +1840,14 @@ Lockfile:
       nan "^2.14.0"
       safe-buffer "^5.2.0"
   
+  keccak@^3.0.0:
+    version "3.0.0"
+    resolved "https://registry.yarnpkg.com/keccak/-/keccak-3.0.0.tgz#420d1de4a38a04f33ff8401f0535fb93756861d4"
+    integrity sha512-/4h4FIfFEpTEuySXi/nVFM5rqSKPnnhI7cL4K3MFSwoI3VyM7AhPSq3SsysARtnEBEeIKMBUWD8cTh9nHE8AkA==
+    dependencies:
+      node-addon-api "^2.0.0"
+      node-gyp-build "^4.2.0"
+  
   kind-of@^3.0.2, kind-of@^3.0.3, kind-of@^3.2.0:
     version "3.2.2"
     resolved "https://registry.npmjs.org/kind-of/-/kind-of-3.2.2.tgz#31ea21a734bab9bbb0f32466d893aea51e4a3c64"
@@ -2023,6 +2070,18 @@ Lockfile:
     resolved "https://registry.npmjs.org/mime-db/-/mime-db-1.43.0.tgz#0a12e0502650e473d735535050e7c8f4eb4fae58"
     integrity sha512-+5dsGEEovYbT8UY9yD7eE4XTc4UwJ1jBYlgaQQF38ENsKR3wj/8q8RFZrF9WIZpB2V1ArTVFUva8sAul1NzRzQ==
   
+  mime-db@1.44.0:
+    version "1.44.0"
+    resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.44.0.tgz#fa11c5eb0aca1334b4233cb4d52f10c5a6272f92"
+    integrity sha512-/NOTfLrsPBVeH7YtFPgsVWveuL+4SjjYxaQ1xtM1KMFj7HdxlBlxeyNLzhyJVx7r4rZGJAZ/6lkKCitSc/Nmpg==
+  
+  mime-types@^2.1.12:
+    version "2.1.27"
+    resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.27.tgz#47949f98e279ea53119f5722e0f34e529bec009f"
+    integrity sha512-JIhqnCasI9yD+SsmkquHBxTSEuZdQX5BuQnS2Vc7puQQQ+8yiP5AY5uWhpdv4YL4VM5c6iliiYWPgJ/nJQLp7w==
+    dependencies:
+      mime-db "1.44.0"
+  
   mime-types@~2.1.24:
     version "2.1.26"
     resolved "https://registry.npmjs.org/mime-types/-/mime-types-2.1.26.tgz#9c921fc09b7e149a65dfdc0da4d20997200b0a06"
@@ -2091,6 +2150,29 @@ Lockfile:
     version "2.1.2"
     resolved "https://registry.npmjs.org/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
     integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
+  
+  muta-sdk@^0.10.1:
+    version "0.10.1"
+    resolved "https://registry.yarnpkg.com/muta-sdk/-/muta-sdk-0.10.1.tgz#395c2629d852a9411e037cfe0bb43d8976097e80"
+    integrity sha512-RPe9eKUC29I6RUx2fzHhrIfQf+M8GIBp9uP9Y/j2pZpDOuOow4pRi4UUGwnAv26E2/MLMedFe1TTPnoo4UMrQg==
+    dependencies:
+      "@types/debug" "^4.1.5"
+      "@types/randombytes" "^2.0.0"
+      "@types/secp256k1" "^3.5.3"
+      bignumber.js "^9.0.0"
+      bip39 "^3.0.2"
+      cross-fetch "^3.0.4"
+      debug "^4.1.1"
+      graphql "^14.5.8"
+      graphql-request "^1.8.2"
+      graphql-tag "^2.10.1"
+      hdkey "^1.1.1"
+      json-bigint "^0.3.0"
+      keccak "^3.0.0"
+      randombytes "^2.1.0"
+      rlp "^2.2.3"
+      secp256k1 "^4.0.0"
+      utility-types "^3.9.0"
   
   muta-sdk@^0.8.0-alpha.1:
     version "0.8.0-alpha.1"
@@ -2165,15 +2247,25 @@ Lockfile:
       iterall "^1.2.2"
       tslib "^1.9.3"
   
+  node-addon-api@^2.0.0:
+    version "2.0.1"
+    resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-2.0.1.tgz#4fd0931bf6d7e48b219ff3e6abc73cbb0252b7a3"
+    integrity sha512-2WVfwRfIr1AVn3dRq4yRc2Hn35ND+mPJH6inC6bjpYCZVrpXPB4j3T6i//OGVfqVsR1t/X/axRulDsheq4F0LQ==
+  
   node-fetch@2.1.2:
     version "2.1.2"
     resolved "https://registry.npmjs.org/node-fetch/-/node-fetch-2.1.2.tgz#ab884e8e7e57e38a944753cec706f788d1768bb5"
     integrity sha1-q4hOjn5X44qUR1POxwb3iNF2i7U=
   
-  node-fetch@2.6.0:
+  node-fetch@2.6.0, node-fetch@^2.6.0:
     version "2.6.0"
     resolved "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.0.tgz#e633456386d4aa55863f676a7ab0daa8fdecb0fd"
     integrity sha512-8dG4H5ujfvFiqDmVu9fQ5bOHUC15JMjMY/Zumv26oOvvVJjM67KF8koCWIabKQ1GJIa9r2mMZscBq/TbdOcmNA==
+  
+  node-gyp-build@^4.2.0:
+    version "4.2.2"
+    resolved "https://registry.yarnpkg.com/node-gyp-build/-/node-gyp-build-4.2.2.tgz#3f44b65adaafd42fb6c3d81afd630e45c847eb66"
+    integrity sha512-Lqh7mrByWCM8Cf9UPqpeoVBBo5Ugx+RKu885GAzmLBVYjeywScxHXPGLa4JfYNZmcNGwzR0Glu5/9GaQZMFqyA==
   
   node-notifier@^5.4.0:
     version "5.4.3"
@@ -2595,6 +2687,15 @@ Lockfile:
       elliptic "^6.5.2"
       nan "^2.14.0"
       safe-buffer "^5.1.2"
+  
+  secp256k1@^4.0.0:
+    version "4.0.1"
+    resolved "https://registry.yarnpkg.com/secp256k1/-/secp256k1-4.0.1.tgz#b9570ca26ace9e74c3171512bba253da9c0b6d60"
+    integrity sha512-iGRjbGAKfXMqhtdkkuNxsgJQfJO8Oo78Rm7DAvsG3XKngq+nJIOGqrCSXcQqIVsmCj0wFanE5uTKFxV3T9j2wg==
+    dependencies:
+      elliptic "^6.5.2"
+      node-addon-api "^2.0.0"
+      node-gyp-build "^4.2.0"
   
   "semver@2 || 3 || 4 || 5", semver@^5.5.0:
     version "5.7.1"

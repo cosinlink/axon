@@ -1,8 +1,9 @@
 {
   "muta": {
-    "endpoint2": "http://47.56.237.128:4800/graphql",
-    "endpoint": "http://0.0.0.0:8000/graphql",
-    "privateKey": "0x30269d47fcf602b889243722b666881bf953f1213228363d34cf04ddcd51dfd2"
+    "endpoint": "http://47.56.237.128:4800/graphql",
+    "endpoint_backup": "http://0.0.0.0:8000/graphql",
+    "privateKey": "0x30269d47fcf602b889243722b666881bf953f1213228363d34cf04ddcd51dfd2",
+    "address": "0x016cbd9ee47a255a6f68882918dcdd9e14e6bee1"
   },
   "ckb": {
     "url": "http://127.0.0.1:8114",
@@ -11,16 +12,42 @@
       "lock": {
         "codeHash": "0xc7ca6184eb65eed3b56a440aae7771faa712ae096a55a1cdf56a7a18d235c6e0",
         "hashType": "data",
-        "args": "0xab117f4330521acececb6816d198a67e73012363fc77b8e5a248ee1d98349ba7"
+        "args": "0x695c3b0e485c5f1f5c5277dd11e8900e41eb0d37de7384671e8ce64b16124c31"
       },
       "type": {
         "codeHash": "0x235c99bd417809ace72ddddf71609281a70b4c74b0292a77cc34519f566f5b3f",
         "hashType": "data",
-        "args": "0xd38ba135bf4f1388ce3d6d9e91005c8d2f6f706d58c467a3f4b0249133d6fe0103000000"
+        "args": "0xdc3974527a8c232e56ebbcf9e57bd92bfdbeb68941103017cb0dc21d235d55a403000000"
       }
     },
-    "deployedTxHash": ""
+    "deployedTxHash": "0xdc3974527a8c232e56ebbcf9e57bd92bfdbeb68941103017cb0dc21d235d55a4"
   },
   "maxGapPeriod": 10,
-  "deployTxHash": "0xd38ba135bf4f1388ce3d6d9e91005c8d2f6f706d58c467a3f4b0249133d6fe01"
+  "sudtIDs": [
+    "0x32e555f3ff8e135cece1351a6a2971518392c1e30375c1e006ad0ce8eac07947"
+  ],
+  "deployTxHash": "0xdc3974527a8c232e56ebbcf9e57bd92bfdbeb68941103017cb0dc21d235d55a4",
+  "crosschainCellData": "0x1c00000008000000c8328aabcd9b9e8e64fbc566c4385c3bdeb219d7",
+  "crosschainTypescript": {
+    "codeHash": "0x235c99bd417809ace72ddddf71609281a70b4c74b0292a77cc34519f566f5b3f",
+    "hashType": "data",
+    "args": "0xdc3974527a8c232e56ebbcf9e57bd92bfdbeb68941103017cb0dc21d235d55a403000000"
+  },
+  "crosschainLockscript": {
+    "codeHash": "0xc7ca6184eb65eed3b56a440aae7771faa712ae096a55a1cdf56a7a18d235c6e0",
+    "hashType": "data",
+    "args": "0x695c3b0e485c5f1f5c5277dd11e8900e41eb0d37de7384671e8ce64b16124c31"
+  },
+  "createCrosschainCellTxHash": "0xf4ba6b7384e768c28e7448384951b2f62f8c3884d3fdffa07948509c4ee655c9",
+  "udtScript": {
+    "codeHash": "0x57dd0067814dab356e05c6def0d094bb79776711e68ffdfad2df6a7f877f7db6",
+    "hashType": "data",
+    "args": "0x32e555f3ff8e135cece1351a6a2971518392c1e30375c1e006ad0ce8eac07947"
+  },
+  "issueTxHash": "0xa17df221b0016ad0b69a3ba408c53c8659018ce2399f98eaf99a391eedafbac8",
+  "lockToCrosschainTxHash": "0xe84965d91dc16468b02b079fa74ac50f8c78ea5b0b11f8ce1bd47c91a14ca0f5",
+  "unlockTxHash": "0xf0ac9d701455f549e22eea08bfc02ac83f8d91ff820fc06d0abdfe77d194451f",
+  "crosschainLockscriptHash": "0x759fc7af73c6796e1214859cc9fa43672950c3a34269e9a4e8c1fcdaff219ee8",
+  "crosschainTypescriptHash": "0x695c3b0e485c5f1f5c5277dd11e8900e41eb0d37de7384671e8ce64b16124c31",
+  "udtScriptHash": "0x41f82c9d44582a0416f96a36eabf5fd514465dd78f302e2e5f9d9d1308e0428b"
 }

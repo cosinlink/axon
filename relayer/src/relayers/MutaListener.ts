@@ -1,7 +1,7 @@
 import {BlockSynchronizer, nexusTypes} from "hermit-purple-server";
 import {safeParseJSON} from "muta-sdk/build/main/utils/common";
 import {config} from "../config";
-import {CkbRelayMessage, mutaCollection, relayToCkbBuffer} from "../db";
+import {CkbRelayMessage, mutaCollection, MutaToCkbWitness, relayToCkbBuffer} from "../db";
 import {BurnEvent, client, MutaRawEvent} from "../muta";
 import {wait} from "../utils";
 import fetch from "node-fetch";
@@ -9,6 +9,7 @@ import {ckb} from "../ckb";
 import {Muta, Client} from "muta-sdk"
 import {muta} from "hermit-purple-server/lib/muta";
 import {sendUnlockTx} from "../consumers/sendUnlockTransaction";
+const {unlockCrosschainContract} = require("../../../demo/src/centralized_crosschain_demo.js");
 
 
 const debug = require("debug")("relayer:muta-listener");
@@ -73,13 +74,14 @@ export class MutaListener {
 
                     const mutaEvents = muta_receipt.events
                     if (mutaEvents.length > 0 ) {
+                    // if (mutaEvents.length == 0 ) {
+                        console.log("found muta->ckb: ", muta_receipt);
                         debug(
                             `found ${mutaEvents.length} muta->ckb events in height: ${currentHeight} of muta`
                         )
                         await this.onSudtBurnToCkb(currentHeight, mutaEvents);
                     }
 
-                    console.log(muta_receipt)
                     await mutaCollection.append( currentHeight )
                 } catch (e) {
                     console.error(e);
@@ -94,27 +96,39 @@ export class MutaListener {
              return {
                  asset_id: data.id,
                  ckb_receiver: data.receiver,
-                 amount: data.amount,
+                 amount: BigInt(data.amount),
              } as BurnEvent
         })
 
-        const witnesses = [ {
-            header: {
-                height: currentHeight,
-            },
-            events: burnEvents,
-            proof: "",
-        } as CkbRelayMessage ]
-        const txHash = await sendUnlockTx(witnesses)
-        // await MutaListener.waitForTx(txHash)
+        const rawWitness ={
+            messages: [ {
+                header: {
+                    height: BigInt(currentHeight),
+                },
+                events: burnEvents,
+            } as CkbRelayMessage],
+            proof: ""
+        } as MutaToCkbWitness
+
+
+        console.log("start unlockCrosschainContract")
+        const txHash = await unlockCrosschainContract(config, rawWitness)
+        if (txHash) {
+            await MutaListener.waitForTx(txHash)
+        }
     }
 
     private static async waitForTx(txHash: string) {
         while (true) {
             const tx = await ckb.rpc.getTransaction(txHash);
             try {
-                console.log(`tx ${txHash} status: ${tx.txStatus.status}`);
+                // console.log(`tx ${txHash} status: ${tx.txStatus.status}`);
                 if (tx.txStatus.status === "committed") {
+                    debug(
+                        `send unlockTx to ckb successfully!! \n
+                         tx: ${txHash}, committed
+                        `
+                    )
                     return;
                 }
             } catch (e) {

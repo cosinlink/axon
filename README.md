@@ -43,4 +43,6 @@ $ which moleculec-es
 $ make schema
 # run the demo
 $ make demo
+# run the relayer in another terminal
+$ make relayer
 ```

@@ -10,6 +10,8 @@ let txHash;
 
 async function run_demo() {
     // ckb crosschain to muta
+
+/*
     console.log("1. relayer call ckb-handler service to submit crosschain message, which mints sudt:\n");
     get_tip_height();
     await sleep(2000);
@@ -20,6 +22,8 @@ async function run_demo() {
     console.log("\nget tx receipt by txHash:\n");
     await sleep(5000);
     get_tx_receipt();
+*/
+
 
     // muta crosschain to ckb
     get_tip_height();
@@ -53,7 +57,6 @@ function get_tx_receipt() {
         "mode": "cors"
     }).then(res => res.json()).then(json => json.data.getReceipt).then(receipt => { height = receipt.height; console.log(receipt); });
 }
-
 
 function get_block_hook_receipt() {
     fetch(config.muta.endpoint, {
@@ -104,6 +107,9 @@ function submit_message() {
 }
 
 function burn_sudt() {
+    const sudt_id = config.sudtIDs.slice(-1)[0]
+    console.log("sudt_id: ", sudt_id)
+
     fetch(config.muta.endpoint, {
         "headers": {
             "accept": "*/*",
@@ -112,7 +118,7 @@ function burn_sudt() {
         },
         "referrer": "http://0.0.0.0:8000/graphiql",
         "referrerPolicy": "no-referrer-when-downgrade",
-        "body": `{\"operationName\":\"burn_sudt\",\"variables\":{},\"query\":\"mutation burn_sudt {\\n  unsafeSendTransaction(inputRaw: {serviceName: \\\"ckb_sudt\\\", method: \\\"burn_sudt\\\", payload: \\\"{\\\\\\\"id\\\\\\\":\\\\\\\"0xf56924db538e77bb5951eb5ff0d02b88983c49c45eea30e8ae3e7234b311436c\\\\\\\", \\\\\\\"receiver\\\\\\\": \\\\\\\"0x016cbd9ee47a255a6f68882918dcdd9e14e6bee1\\\\\\\", \\\\\\\"amount\\\\\\\": 100}\\\", timeout: \\\"${tip_height}\\\", nonce: \\\"0x9db2d7efe2b61a88827e4836e2775d913a442ed2f9096ca1233e479607c27cf7\\\", chainId: \\\"0xb6a4d7da21443f5e816e8700eea87610e6d769657d6b8ec73028457bf2ca4036\\\", cyclesPrice: \\\"0x9\\\", cyclesLimit: \\\"0x99999\\\"}, inputPrivkey: \\\"0x30269d47fcf602b889243722b666881bf953f1213228363d34cf04ddcd51dfd2\\\")\\n}\\n\"}`,
+        "body": `{\"operationName\":\"burn_sudt\",\"variables\":{},\"query\":\"mutation burn_sudt {\\n  unsafeSendTransaction(inputRaw: {serviceName: \\\"ckb_sudt\\\", method: \\\"burn_sudt\\\", payload: \\\"{\\\\\\\"id\\\\\\\": \\\\\\"${sudt_id}\\\\\\", \\\\\\\"receiver\\\\\\\": \\\\\\\"0xaaaade6c26706c095dcacde9e5c34b0b6160f3b8fe76264a1fa8f0bde756b191\\\\\\\", \\\\\\\"amount\\\\\\\": 3}\\\", timeout: \\\"${tip_height}\\\", nonce: \\\"0x9db2d7efe2b61a88827e4836e2775d913a442ed2f9096ca1233e479607c27cf7\\\", chainId: \\\"0xb6a4d7da21443f5e816e8700eea87610e6d769657d6b8ec73028457bf2ca4036\\\", cyclesPrice: \\\"0x9\\\", cyclesLimit: \\\"0x99999\\\"}, inputPrivkey: \\\"0x30269d47fcf602b889243722b666881bf953f1213228363d34cf04ddcd51dfd2\\\")\\n}\\n\"}`,
         "method": "POST",
         "mode": "cors"
     }).then(res => res.json()).then(json => { txHash = json.data.unsafeSendTransaction; });

@@ -3,7 +3,7 @@
     "lib": ["ES2019"],
     "module": "commonjs",
     "target": "ES2019",
-    "strict": true,
+//    "strict": true,
     "sourceMap": true,
     "esModuleInterop": true
   },

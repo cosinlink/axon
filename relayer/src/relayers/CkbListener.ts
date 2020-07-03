@@ -128,7 +128,7 @@ function generateBatchMint(crossTxs: CKBComponents.Transaction[]) {
           const outputIndex = tx.inputs.length
 
           return {
-            id: tx.hash,
+            id: tx.outputs[0].type.args,
             receiver: utils.toHex(tx.witnesses[ outputIndex ]),
             amount: LittleEndianHexToBigint(tx.outputsData[0])
           }  as MintSudt
