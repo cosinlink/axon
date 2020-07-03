@@ -738,10 +738,28 @@ function transformWitness(witness) {
 }
 
 async function storeConfigToRelayer(config) {
-  relayerConfig.deployTxHash = config.deployTxHash;
+  relayerConfig.ckb.deployedTxHash = config.deployTxHash;
   relayerConfig.ckb.output = {
     lock: config.crosschainLockscript,
     type: config.crosschainTypescript,
+  }
+
+  // store sudt_id that was arg of udtScript.args
+  if (!relayerConfig.sudtIDs){
+    relayerConfig.sudtIDs = []
+  }
+  if (relayerConfig.sudtIDs.indexOf(config.udtScript.args) === -1) {
+    relayerConfig.sudtIDs.push( config.udtScript.args );
+  }
+
+  // calcute scriptHash
+  config.crosschainLockscriptHash = utils.scriptToHash(config.crosschainLockscript)
+  config.crosschainTypescriptHash = utils.scriptToHash(config.crosschainTypescript)
+  config.udtScriptHash = utils.scriptToHash(config.udtScript)
+
+  // store config to relayerConfig
+  for (const key in config) {
+    relayerConfig[key] = config[key]
   }
   fs.writeFileSync(relayerConfigPath, JSON.stringify(relayerConfig, null, 2));
 }
@@ -781,8 +799,10 @@ async function main() {
 
   await lockToCrosschainContract();
   await waitForTx(config.lockToCrosschainTxHash);
+
   await unlockCrosschainContract(config);
   await waitForTx(config.unlockTxHash);
+
   await delay(5000);
   const tx = await ckb.rpc.getTransaction(config.unlockTxHash);
   console.log(JSON.stringify(tx, null, 2));
