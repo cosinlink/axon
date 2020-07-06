@@ -1,14 +1,10 @@
-import {BlockSynchronizer, nexusTypes} from "hermit-purple-server";
-import {safeParseJSON} from "muta-sdk/build/main/utils/common";
 import {config} from "../config";
-import {CkbRelayMessage, mutaCollection, MutaToCkbWitness, relayToCkbBuffer} from "../db";
-import {BurnEvent, client, MutaRawEvent} from "../muta";
+import {CkbRelayMessage, mutaCollection, MutaToCkbWitness} from "../db";
+import {BurnEvent, client} from "../muta";
 import {wait} from "../utils";
 import fetch from "node-fetch";
 import {ckb} from "../ckb";
-import {Muta, Client} from "muta-sdk"
-import {muta} from "hermit-purple-server/lib/muta";
-import {sendUnlockTx} from "../consumers/sendUnlockTransaction";
+
 const {unlockCrosschainContract} = require("../../../demo/src/centralized_crosschain_demo.js");
 
 

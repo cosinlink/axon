@@ -29,9 +29,13 @@ $ cd ckb-contracts
 $ make install-tools
 $ make generate-protocol
 $ make all-via-docker
-$ cd ..
 
-# run demo
+# run relayer
+$ cd ../relayer
+$ npm install
+$ npm start
+
+# run demo in another terminal
 $ cd demo
 $ yarn
 # install https://github.com/xxuejie/moleculec-es
@@ -43,6 +47,4 @@ $ which moleculec-es
 $ make schema
 # run the demo
 $ make demo
-# run the relayer in another terminal
-$ make relayer
 ```

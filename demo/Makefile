@@ -1,9 +1,6 @@
 demo:
 	yarn node src/demo.js
 
-relayer:
-	cd ../relayer && npm install && npm start
-
 schema:
 	mkdir -p build/
 	moleculec --language - --schema-file ../ckb-contracts/schema/centralized_crosschain.mol --format json > ./build/centralized_crosschain.json
