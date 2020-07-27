@@ -11,11 +11,10 @@ use core::result::Result;
 // https://nervosnetwork.github.io/ckb-std/riscv64imac-unknown-none-elf/doc/ckb_std/index.html
 use ckb_std::{
     ckb_constants::Source,
-    entry,
-    default_alloc,
-    high_level::{load_script, load_cell_type_hash},
-    error::SysError,
     ckb_types::{bytes::Bytes, prelude::*},
+    debug, default_alloc, entry,
+    error::SysError,
+    high_level::{load_cell_type_hash, load_script},
 };
 
 entry!(entry);
@@ -58,6 +57,13 @@ fn main() -> Result<(), Error> {
     let script = load_script()?;
     let args: Bytes = script.args().unpack();
     let type_hash = load_cell_type_hash(0, Source::Input)?;
+
+    debug!(
+        "args: {:?}, type_hash: {:?}",
+        args.to_vec(),
+        type_hash.to_vec()
+    );
+
     if &args[..] != &type_hash[..] {
         return Err(Error::TypesScriptMisMatch);
     }

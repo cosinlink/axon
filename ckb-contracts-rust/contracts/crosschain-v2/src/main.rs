@@ -14,9 +14,11 @@ use core::result::Result;
 use ckb_std::{
     ckb_constants::Source,
     ckb_types::{bytes::Bytes, prelude::*},
-    default_alloc, entry,
+    debug, default_alloc, entry,
     error::SysError,
-    high_level::{load_cell, load_cell_data, load_cell_lock_hash, load_script, QueryIter},
+    high_level::{
+        load_cell, load_cell_data, load_cell_lock_hash, load_cell_type_hash, load_script, QueryIter,
+    },
 };
 use types::{CrosschainData, CrosschainDataReader, CrosschainWitness, CrosschainWitnessReader};
 
@@ -63,12 +65,16 @@ impl From<SysError> for Error {
 }
 
 fn verify_init() -> Result<(), Error> {
+    debug!("begin verify_init");
+
     let script = load_script()?;
     let args: Bytes = script.args().unpack();
     let lock_hash = load_cell_lock_hash(0, Source::Output)?;
     if &args[..] != lock_hash.as_ref() {
         Err(Error::ArgsInvalid)
     } else {
+        debug!("verify_init success");
+
         Ok(())
     }
 }
@@ -78,6 +84,8 @@ fn verify_transfer() -> Result<(), Error> {
      * First, ensures that the input capacity is not less than output capacity in
      * typescript groups for the input and output cells.
      */
+    debug!("begin verify_transfer");
+
     let inputs_capacity = QueryIter::new(load_cell, Source::GroupInput)
         .map(|cell| cell.capacity().unpack())
         .sum::<u64>();
@@ -87,6 +95,7 @@ fn verify_transfer() -> Result<(), Error> {
     if inputs_capacity > outputs_capacity {
         return Err(Error::CapacityInvalid);
     }
+    debug!("after capacity cmp");
 
     /*
      * Second, ensure crosschain cell is not changed
@@ -96,6 +105,8 @@ fn verify_transfer() -> Result<(), Error> {
     if input_data != output_data {
         return Err(Error::OutDataInvalid);
     }
+
+    debug!("before verify init");
 
     /*
      * Third, check if args == hash of lockscript in the current cell

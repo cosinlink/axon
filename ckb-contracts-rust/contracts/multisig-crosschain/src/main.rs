@@ -11,21 +11,21 @@ use core::result::Result;
 
 // Import CKB syscalls and structures
 // https://nervosnetwork.github.io/ckb-std/riscv64imac-unknown-none-elf/doc/ckb_std/index.html
+use crate::types::{Hashes, SignatureVec};
+use blake2b_ref::{Blake2b, Blake2bBuilder};
 use ckb_std::{
     ckb_constants::Source,
     ckb_types::{bytes::Bytes, prelude::*},
-    default_alloc, entry,
+    debug, default_alloc, entry,
     error::SysError,
     high_level::{
         load_cell, load_cell_data, load_cell_data_hash, load_input_out_point, load_script,
         load_witness_args, QueryIter,
     },
 };
-use types::{CrosschainData, CrosschainDataReader, CrosschainWitness, CrosschainWitnessReader};
-use blake2b_ref::{Blake2b, Blake2bBuilder};
-use secp256k1::{recover, Message, RecoveryId, Signature};
-use crate::types::{Hashes, SignatureVec};
 use molecule::prelude::Byte;
+use secp256k1::{recover, Message, RecoveryId, Signature};
+use types::{CrosschainData, CrosschainDataReader, CrosschainWitness, CrosschainWitnessReader};
 
 const CKB_HASH_PERSONALIZATION: &[u8] = b"ckb-default-hash";
 const MAX_VALIDATORS: usize = 16;
@@ -85,6 +85,8 @@ pub fn new_blake2b() -> Blake2b {
 }
 
 fn verify_init() -> Result<(), Error> {
+    debug!("begin verify_init");
+
     let script = load_script()?;
     let args: Bytes = script.args().unpack();
 
@@ -93,6 +95,8 @@ fn verify_init() -> Result<(), Error> {
     if &args[..] != outpoint.as_ref() {
         Err(Error::ArgsInvalid)
     } else {
+        debug!("verify_init success");
+
         Ok(())
     }
 }
@@ -102,6 +106,8 @@ fn verify_transfer() -> Result<(), Error> {
      * First, ensures that the input capacity is not less than output capacity in
      * typescript groups for the input and output cells.
      */
+    debug!("begin verify_transfer");
+
     let inputs_capacity = QueryIter::new(load_cell, Source::GroupInput)
         .map(|cell| cell.capacity().unpack())
         .sum::<u64>();
@@ -112,18 +118,32 @@ fn verify_transfer() -> Result<(), Error> {
         return Err(Error::CapacityInvalid);
     }
 
+    debug!("after capacity cmp");
+
     // ensure data does not change
-    let input_data_hash = load_cell_data_hash(0, Source::GroupInput)?;
-    let output_data_hash = load_cell_data_hash(0, Source::GroupOutput)?;
+    let input_data_hash = load_cell_data_hash(0, Source::Input)?;
+    let output_data_hash = load_cell_data_hash(0, Source::Output)?;
+
+    debug!(
+        "input_data_hash: {:?}, output_data_hash: {:?}",
+        input_data_hash, output_data_hash
+    );
+
     if input_data_hash != output_data_hash {
         return Err(Error::OutDataInvalid);
     }
+
+    debug!("before verify signature");
 
     let witness_args = load_witness_args(0, Source::Input)?.input_type();
     if witness_args.is_none() {
         return Err(Error::WitnessMissInputType);
     }
     let witness_args: Bytes = witness_args.to_opt().unwrap().unpack();
+
+    debug!("witness_args: {:?}", &witness_args[..]);
+    debug!("before CrosschainWitnessReader::verify");
+
     if CrosschainWitnessReader::verify(&witness_args, false).is_err() {
         return Err(Error::WitnessInvalidEncoding);
     }
@@ -132,7 +152,13 @@ fn verify_transfer() -> Result<(), Error> {
     let messages = crosschain_witness.messages().as_bytes();
     let proof = crosschain_witness.proof();
 
+    debug!("proof: {:?}", proof);
+    debug!("before load_cell_data");
+
     let crosschain_data_raw = load_cell_data(0, Source::GroupInput)?;
+
+    debug!("crosschain_data_raw: {:?}", crosschain_data_raw);
+
     if CrosschainDataReader::verify(&crosschain_data_raw, false).is_err() {
         return Err(Error::CrosschainInputDataEncodingInvalid);
     }
@@ -140,15 +166,39 @@ fn verify_transfer() -> Result<(), Error> {
     let pubkey_hashes = crosschain_data.pubkey_hashes();
     let threshold = crosschain_data.threshold();
 
+    debug!(
+        "pubkey_hashes from crosschain_data: {:?}",
+        pubkey_hashes.clone()
+    );
+
     let mut blake2b = new_blake2b();
     let mut message_hash = [0u8; 32];
     blake2b.update(messages.as_ref());
     blake2b.finalize(&mut message_hash);
 
-    verify_multisig(&message_hash, &pubkey_hashes, threshold.as_bytes()[0], proof)
+    debug!("message_hash.len = {}", message_hash.len());
+    debug!("message_hash = {:?}", message_hash.to_vec());
+    debug!("before verify_multisig");
+
+    verify_multisig(
+        &message_hash,
+        &pubkey_hashes,
+        threshold.as_bytes()[0],
+        proof,
+    )
 }
 
-fn verify_multisig(msg_hash: &[u8; 32], pubkey_hashes: &Hashes, threshold: u8, proof: SignatureVec) -> Result<(), Error> {
+fn verify_multisig(
+    msg_hash: &[u8; 32],
+    pubkey_hashes: &Hashes,
+    threshold: u8,
+    proof: SignatureVec,
+) -> Result<(), Error> {
+    debug!("begin verify_multisig");
+    debug!("pubkey_hashes = {:?}", pubkey_hashes);
+    debug!("threshold = {}", threshold);
+    debug!("proof = {:?}", proof);
+
     let msg = Message::parse_slice(msg_hash).expect("invalid message hash");
     if pubkey_hashes.len() > MAX_VALIDATORS as usize {
         return Err(Error::ValidatorsOverLimit);
@@ -157,10 +207,13 @@ fn verify_multisig(msg_hash: &[u8; 32], pubkey_hashes: &Hashes, threshold: u8, p
         return Err(Error::SignaturesOverLimit);
     }
 
+    debug!("proof.len() = {}", proof.len());
+
     let mut has_verified = [false; MAX_VALIDATORS];
     let mut sum_verified = 0u8;
     for raw_sig in proof.into_iter() {
-        let sig = Signature::parse_slice(&raw_sig.as_slice()[0..64]).expect("invalid signature from proof");
+        let sig = Signature::parse_slice(&raw_sig.as_slice()[0..64])
+            .expect("invalid signature from proof");
         let rec_id = RecoveryId::parse(raw_sig.as_slice()[64]);
         if rec_id.is_err() {
             continue;
@@ -168,6 +221,8 @@ fn verify_multisig(msg_hash: &[u8; 32], pubkey_hashes: &Hashes, threshold: u8, p
         let recover_pubkey = recover(&msg, &sig, &rec_id.unwrap())
             .map_err(|_e| Error::InvalidSignature)?
             .serialize_compressed();
+
+        debug!("recover_pubkey: {:?}", recover_pubkey.to_vec());
 
         let mut blake2b = new_blake2b();
         let mut recover_pubkey_hash = [0u8; 32];
